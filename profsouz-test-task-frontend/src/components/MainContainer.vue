@@ -1,14 +1,17 @@
 <template>
   <div class="container">
-    <div class="bar-chart-container" ref="barChartContainer" @mousedown="onDragAnDropBarChart($event)">
-      <svg class="bar-chart" ref="barChart" :width="this.barChartWidth">
-        <g v-for="(value, index) in data" :key="index"
+    <div class="bar-chart-container" ref="barChartContainer">
+      <svg class="bar-chart" ref="barChart" :width="this.barChartWidth" @mousedown="onDragAnDropBarChart($event)">
+        <g class="bars-container" ref="bars-container"
            :transform="`translate(${this.BAR_GAP}, ${this.barChartClientHeight}) scale(1,-1)`">
-          <rect class="bar"
+          <rect v-for="(value, index) in data" :key="index" class="bar"
                 :height="`${100 * value * this.barHeightScaleFactor}%`"
                 :width="this.BAR_WIDTH"
                 :x="index * (this.BAR_WIDTH + this.BAR_GAP)"
           ></rect>
+        </g>
+        <g>
+          <circle cx="50" cy="50" r="50"/>
         </g>
       </svg>
     </div>
@@ -75,25 +78,34 @@ export default {
 
     onDragAnDropBarChart(e) {
 
-      const barChart = document.querySelector(".bar-chart");
+      const barChart = e.currentTarget;
+      const barsContainer = document.querySelector(".bars-container")
+
+      let transformTranslate = Array.from(barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+      let currentBarsContainerTranslateX = transformTranslate.matrix.e;
 
       let onMouseMove = function (e1) {
-        barChart.style.left = parseInt(window.getComputedStyle(barChart).left) + e1.offsetX - e.offsetX + 'px';
+        transformTranslate.setTranslate(currentBarsContainerTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
       }
 
-      this.$refs.barChartContainer.onmouseup = function (e2) {
-        console.log(e2.type, e2.target)
-        this.removeEventListener('mousemove', onMouseMove, true);
+      barChart.onmouseup = function () {
+        barChart.removeEventListener('mousemove', onMouseMove, {capture: true});
         this.onmouseup = null;
       }
 
-      this.$refs.barChartContainer.onmouseover = function (e3) {
-        console.log(e3.type, e.target)
-        this.removeEventListener('mousemove', onMouseMove, true);
-        this.onmouseout = null;
+      barChart.onmouseout = function (e2) {
+        e2.stopImmediatePropagation();
+        e2.stopPropagation();
+        console.log("1", e2.currentTarget, e2.target)
+        this.removeEventListener('mousemove', onMouseMove, {capture: true});
+      }
+      barsContainer.onmouseout = function (e) {
+        e.stopImmediatePropagation();
+        e.stopPropagation();
       }
 
-      this.$refs.barChartContainer.addEventListener("mousemove", onMouseMove, );
+      // barChart.addEventListener("mousemove", onMouseMove, {capture: true});
+      barChart.addEventListener("mousemove", onMouseMove, {capture: true});
     },
   },
 
