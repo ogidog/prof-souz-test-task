@@ -2,16 +2,18 @@
   <div class="container">
     <div class="bar-chart-container" ref="barChartContainer">
       <svg class="bar-chart" ref="barChart" :width="this.barChartWidth" @mousedown="onDragAnDropBarChart($event)">
-        <g class="bars-container" ref="bars-container"
-           :transform="`translate(${this.BAR_GAP}, ${this.barChartClientHeight}) scale(1,-1)`">
-          <rect v-for="(value, index) in data" :key="index" class="bar"
-                :height="`${100 * value * this.barHeightScaleFactor}%`"
+        <g class="bars-container" ref="barsContainer"
+           :transform="`translate(${this.BARS_CONTAINER_MARGIN_X}, ${this.barChartHeight}) scale(1,-1)`">
+          <rect class="bar" v-for="(value, index) in this.randomNumbers" :key="index"
+                :height="this.getBarHeight(value)"
                 :width="this.BAR_WIDTH"
                 :x="index * (this.BAR_WIDTH + this.BAR_GAP)"
           ></rect>
         </g>
         <g>
-          <circle cx="50" cy="50" r="50"/>
+          <line x1="0" y1="0" x2="0" :y2="this.barChartContainerHeight" stroke="black" stroke-width="2px"/>
+          <line x1="0" y1="0" :x2="this.barChartContainerWidth" y2="0" stroke="black" stroke-width="2px"
+                :transform="`translate(0, ${this.barChartContainerHeight})`"/>
         </g>
       </svg>
     </div>
@@ -30,97 +32,108 @@
 
 <script>
 export default {
+
   created() {
+
     this.BAR_WIDTH = 50;
     this.BAR_GAP = 2;
+    this.BARS_CONTAINER_MARGIN_X = 50;
+    this.BARS_CONTAINER_MARGIN_Y = 50;
 
     this.randomNumber = (min, max) => Math.floor(Math.random() * max) + min;
-    this.resetToDefaultBarChart = () => {
-      const barChart = document.querySelector(".bar-chart");
-      barChart.style.left = '0px';
-    }
+
   },
 
   mounted() {
-    this.barChartClientHeight = this.$refs.barChart.clientHeight;
-    this.barChartContainerClientWidth = this.$refs.barChartContainer.clientWidth;
-    this.barsPerPage = Math.floor(this.barChartContainerClientWidth / (this.BAR_WIDTH + this.BAR_GAP));
+    this.barChartHeight = this.$refs.barChart.clientHeight - this.BARS_CONTAINER_MARGIN_Y;
+    this.barChartContainerWidth = this.$refs.barChartContainer.clientWidth;
+    this.barChartContainerHeight = this.$refs.barChartContainer.clientHeight;
+    this.barsPerPage = Math.floor(this.barChartContainerWidth / (this.BAR_WIDTH + this.BAR_GAP));
 
+    this.maxRandomNumber = Math.max.apply(null, this.randomNumbers);
+  },
+
+  beforeUpdate() {
+    this.maxRandomNumber = Math.max.apply(null, this.randomNumbers);
   },
 
   data() {
     return {
-      data: [34, 45, 56, 100, 230, 230, 47, 34, 45, 56, 100, 230, 230, 47, 34, 45, 56, 100, 230, 230, 47],
+      randomNumbers: [80, 45, 56.5, 80, 180, 38, 47, 34, 45, 80, 45, 56, 80, 180, 38, 47, 34, 45, 80, 45, 56, 80, 180, 38, 47, 34, 45],
 
-      barChartClientHeight: 1,
-      barChartContainerClientWidth: 1,
+      barChartHeight: 1,
+      barChartContainerWidth: 1,
+      barChartContainerHeight: 1,
 
       barsPerPage: 1,
       currentPage: 0,
+
+      maxRandomNumber: -1
     }
   },
 
   methods: {
+
+    getBarHeight(value) {
+      let height = 1;
+
+      if (this.maxRandomNumber > this.barChartHeight) {
+        height = (value * this.barChartHeight / this.maxRandomNumber) - this.BARS_CONTAINER_MARGIN_Y;
+      } else {
+        height = value
+      }
+
+      return height >= 0 ? height : 0;
+    },
+
     onBarAdd() {
-      this.resetToDefaultBarChart();
-      this.data.push(this.randomNumber(10, 400));
+      this.randomNumbers.push(this.randomNumber(1, 500));
     },
 
     onBarRemove() {
-      this.resetToDefaultBarChart();
-      this.data.pop();
+      this.randomNumbers.pop();
     },
 
     onPagingBarChart(pageNum) {
-      this.resetToDefaultBarChart();
-      this.$refs.barChartContainer.scrollTo(pageNum * this.barChartContainerClientWidth, 0);
+      let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+      console.log(transformTranslate)
     },
 
     onDragAnDropBarChart(e) {
 
       const barChart = e.currentTarget;
-      const barsContainer = document.querySelector(".bars-container")
+      const barChartContainerWidth = this.barChartContainerWidth;
+      const barChartHeight = this.barChartHeight;
 
-      let transformTranslate = Array.from(barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
-      let currentBarsContainerTranslateX = transformTranslate.matrix.e;
+      let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+      let startTranslateX = transformTranslate.matrix.e;
 
       let onMouseMove = function (e1) {
-        transformTranslate.setTranslate(currentBarsContainerTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
+        if (e1.offsetX > 0 && e1.offsetX < barChartContainerWidth && e1.offsetY > 0 && e1.offsetY < barChartHeight) {
+          transformTranslate.setTranslate(startTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
+        } else {
+          barChart.removeEventListener('mousemove', onMouseMove, {capture: true});
+          barChart.onmouseup = null;
+        }
       }
 
       barChart.onmouseup = function () {
         barChart.removeEventListener('mousemove', onMouseMove, {capture: true});
-        this.onmouseup = null;
+        barChart.onmouseup = null;
       }
 
-      barChart.onmouseout = function (e2) {
-        e2.stopImmediatePropagation();
-        e2.stopPropagation();
-        console.log("1", e2.currentTarget, e2.target)
-        this.removeEventListener('mousemove', onMouseMove, {capture: true});
-      }
-      barsContainer.onmouseout = function (e) {
-        e.stopImmediatePropagation();
-        e.stopPropagation();
-      }
-
-      // barChart.addEventListener("mousemove", onMouseMove, {capture: true});
       barChart.addEventListener("mousemove", onMouseMove, {capture: true});
     },
   },
 
   computed: {
     barChartWidth() {
-      return this.data.length * this.BAR_WIDTH + this.BAR_GAP * this.data.length;
-    },
-
-    barHeightScaleFactor() {
-      let maxElement = Math.max.apply(null, this.data);
-      return maxElement > this.barChartClientHeight ? 1 / maxElement : 1 / this.barChartClientHeight;
+      let width = this.randomNumbers.length * this.BAR_WIDTH + this.BAR_GAP * this.randomNumbers.length - this.BARS_CONTAINER_MARGIN_X;
+      return width < this.barChartContainerWidth ? this.barChartContainerWidth : width;
     },
 
     numPages() {
-      return Math.ceil(this.data.length / this.barsPerPage)
+      return Math.ceil(this.randomNumbers.length / this.barsPerPage)
     }
   }
 }
@@ -138,27 +151,25 @@ export default {
 
   width: 50vw;
   height: 30vh;
+}
+
+.bar-chart-container {
+  height: 100%;
+  overflow: hidden;
 
   border: 1px solid red;
 }
 
-.bar-chart-container {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-
-  border: 1px solid green;
-}
-
 .bar-chart {
   position: relative;
-  height: 99%;
-  left: 0px;
+  height: 100%;
+
+  border: 0px solid green;
 }
 
 .bar {
   fill: red;
-  y: 2;
+  y: 0;
 }
 
 .button-controls {
