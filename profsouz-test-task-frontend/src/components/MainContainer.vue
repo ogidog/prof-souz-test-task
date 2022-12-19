@@ -1,31 +1,24 @@
 <template>
   <div class="container">
     <div class="bar-chart-container" ref="barChartContainer">
-      <svg class="bar-chart" ref="barChart" :width="this.barChartWidth" @mousedown="onDragAnDropBarChart($event)">
+      <svg class="bar-chart" ref="barChart" v-if="this.randomNumbers.length" :width="this.barChartWidth"
+           @mousedown="onDragAnDropBarChart($event)">
         <g class="bars-container" ref="barsContainer"
-           :transform="`translate(${this.BARS_CONTAINER_MARGIN_X}, ${this.barChartHeight}) scale(1,-1)`">
-          <rect class="bar" v-for="(value, index) in this.randomNumbers" :key="index"
-                :height="this.getBarHeight(value)"
+           :transform="`translate(${this.BARS_CONTAINER_MARGIN_X}, ${this.yOrigin}) scale(1,-1)`">
+          <rect class="bar" v-for="(value, index) in this.barHeights" :key="index"
+                :height="Math.abs(value)"
                 :width="this.BAR_WIDTH"
                 :x="index * (this.BAR_WIDTH + this.BAR_GAP)"
+                :y="value < 0 ? value : 0"
           ></rect>
-        </g>
-        <g>
-          <line x1="0" y1="0" x2="0" :y2="this.barChartContainerHeight" stroke="black" stroke-width="2px"/>
-          <line x1="0" y1="0" :x2="this.barChartContainerWidth" y2="0" stroke="black" stroke-width="2px"
-                :transform="`translate(0, ${this.barChartContainerHeight})`"/>
         </g>
       </svg>
     </div>
     <div class="button-controls">
+      <button v-if="currentPage !== 0" @click="onPrevPaging">{{ "<" }}</button>
       <button @click="onBarAdd">Add Bar</button>
       <button @click="onBarRemove">Remove Bar</button>
-    </div>
-    <div class="pagination-control" v-if="this.numPages > 1">
-      <div class="page-control" @click="onPagingBarChart(pageNum)" v-for="pageNum in [...Array(this.numPages).keys()]"
-           :key="pageNum">
-        {{ pageNum + 1 }}
-      </div>
+      <button v-if="currentPage !== this.numPages-1" @click="onNextPaging">{{ ">" }}</button>
     </div>
   </div>
 </template>
@@ -37,104 +30,151 @@ export default {
 
     this.BAR_WIDTH = 50;
     this.BAR_GAP = 2;
-    this.BARS_CONTAINER_MARGIN_X = 50;
-    this.BARS_CONTAINER_MARGIN_Y = 50;
+    this.BARS_CONTAINER_MARGIN_X = 10;
+    this.BARS_CONTAINER_MARGIN_Y = 10;
 
-    this.randomNumber = (min, max) => Math.floor(Math.random() * max) + min;
+    this.MIN_VALUE = -200;
+    this.MAX_VALUE = 550;
 
-  },
-
-  mounted() {
-    this.barChartHeight = this.$refs.barChart.clientHeight - this.BARS_CONTAINER_MARGIN_Y;
-    this.barChartContainerWidth = this.$refs.barChartContainer.clientWidth;
-    this.barChartContainerHeight = this.$refs.barChartContainer.clientHeight;
-    this.barsPerPage = Math.floor(this.barChartContainerWidth / (this.BAR_WIDTH + this.BAR_GAP));
-
-    this.maxRandomNumber = Math.max.apply(null, this.randomNumbers);
-  },
-
-  beforeUpdate() {
-    this.maxRandomNumber = Math.max.apply(null, this.randomNumbers);
+    this.getRandomNumber = (min, max) => Math.floor(Math.random() * max) + min;
   },
 
   data() {
     return {
-      randomNumbers: [80, 45, 56.5, 80, 180, 38, 47, 34, 45, 80, 45, 56, 80, 180, 38, 47, 34, 45, 80, 45, 56, 80, 180, 38, 47, 34, 45],
+
+      randomNumbers: [10, 50, -30, 100, 150, -20, 10, 50, -30, 100, 150, -20, 99, 88, -10, 200, 53, -70, 300, 300, 300, 300, 300],
 
       barChartHeight: 1,
       barChartContainerWidth: 1,
       barChartContainerHeight: 1,
 
-      barsPerPage: 1,
       currentPage: 0,
 
       maxRandomNumber: -1
     }
   },
 
+  mounted() {
+    this.onResize();
+    window.addEventListener('resize', this.onResize);
+  },
+
+  unmounted() {
+    window.removeEventListener('resize', this.onResize);
+  },
+
   methods: {
 
-    getBarHeight(value) {
-      let height = 1;
-
-      if (this.maxRandomNumber > this.barChartHeight) {
-        height = (value * this.barChartHeight / this.maxRandomNumber) - this.BARS_CONTAINER_MARGIN_Y;
-      } else {
-        height = value
-      }
-
-      return height >= 0 ? height : 0;
+    onResize() {
+      this.barChartHeight = this.$refs?.barChart?.clientHeight;
+      this.barChartContainerWidth = this.$refs?.barChartContainer?.clientWidth;
+      this.barChartContainerHeight = this.$refs?.barChartContainer?.clientHeight;
     },
 
     onBarAdd() {
-      this.randomNumbers.push(this.randomNumber(1, 500));
+      this.randomNumbers.push(this.getRandomNumber(this.MIN_VALUE, this.MAX_VALUE));
     },
 
     onBarRemove() {
       this.randomNumbers.pop();
     },
 
-    onPagingBarChart(pageNum) {
+    onNextPaging() {
+      this.currentPage += 1
       let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
-      console.log(transformTranslate)
+      transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth, transformTranslate.matrix.f);
+    },
+
+    onPrevPaging() {
+      let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+      transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth + this.barChartContainerWidth + this.BARS_CONTAINER_MARGIN_X, transformTranslate.matrix.f);
+      this.currentPage -= 1
     },
 
     onDragAnDropBarChart(e) {
 
       const barChart = e.currentTarget;
-      const barChartContainerWidth = this.barChartContainerWidth;
-      const barChartHeight = this.barChartHeight;
 
       let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
       let startTranslateX = transformTranslate.matrix.e;
 
       let onMouseMove = function (e1) {
-        if (e1.offsetX > 0 && e1.offsetX < barChartContainerWidth && e1.offsetY > 0 && e1.offsetY < barChartHeight) {
-          transformTranslate.setTranslate(startTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
+        if (e1.offsetX > 0 && e1.offsetX <= this.barChartContainerWidth - this.BARS_CONTAINER_MARGIN_X && e1.offsetY > 0 && e1.offsetY < this.barChartHeight) {
+
+          if (startTranslateX + e1.offsetX - e.offsetX <= this.BARS_CONTAINER_MARGIN_X) {
+            transformTranslate.setTranslate(startTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
+            for (let i = this.numPages + 1; i > 0; i--) {
+              if (transformTranslate.matrix.e > -i * this.barChartContainerWidth && transformTranslate.matrix.e <= -(i - 1) * this.barChartContainerWidth) {
+                this.currentPage = i - 1;
+              }
+              if (transformTranslate.matrix.e >= 0) {
+                this.currentPage = 0;
+              }
+            }
+          }
+
         } else {
-          barChart.removeEventListener('mousemove', onMouseMove, {capture: true});
-          barChart.onmouseup = null;
+          barChart.removeEventListener('mousemove', _onMouseMove, {capture: true});
         }
+
       }
+      let _onMouseMove = onMouseMove.bind(this);
 
       barChart.onmouseup = function () {
-        barChart.removeEventListener('mousemove', onMouseMove, {capture: true});
-        barChart.onmouseup = null;
+        barChart.removeEventListener('mousemove', _onMouseMove, {capture: true});
       }
 
-      barChart.addEventListener("mousemove", onMouseMove, {capture: true});
+      barChart.addEventListener("mousemove", _onMouseMove, {capture: true});
     },
   },
 
   computed: {
     barChartWidth() {
-      let width = this.randomNumbers.length * this.BAR_WIDTH + this.BAR_GAP * this.randomNumbers.length - this.BARS_CONTAINER_MARGIN_X;
+      const width = this.randomNumbers.length * this.BAR_WIDTH + this.BAR_GAP * this.randomNumbers.length - this.BARS_CONTAINER_MARGIN_X;
       return width < this.barChartContainerWidth ? this.barChartContainerWidth : width;
     },
 
+    yOrigin() {
+      let minBarHeight = Math.min.apply(null, this.barHeights);
+      return minBarHeight < 0 ? this.barChartHeight / 2 + (this.barChartHeight / 2 + minBarHeight) - this.BARS_CONTAINER_MARGIN_Y : this.barChartHeight - this.BARS_CONTAINER_MARGIN_Y;
+    },
+
+    barHeights() {
+      const heights = [...this.randomNumbers];
+
+      const absMax = heights.reduce(function (max, item) {
+        return Math.max(Math.abs(max), Math.abs(item));
+      });
+
+      const minRandomNumber = Math.min.apply(null, heights);
+      const maxRandomNumber = Math.max.apply(null, heights);
+
+      let normScaleFactor;
+
+      if (minRandomNumber < 0 && maxRandomNumber > this.barChartHeight || (minRandomNumber < 0 && maxRandomNumber < this.barChartHeight)) {
+        normScaleFactor = (this.barChartHeight - this.BARS_CONTAINER_MARGIN_Y) / 2;
+      }
+
+      if ((minRandomNumber >= 0 && maxRandomNumber > this.barChartHeight) || (minRandomNumber >= 0 && maxRandomNumber < this.barChartHeight)) {
+        normScaleFactor = this.barChartHeight - 2 * this.BARS_CONTAINER_MARGIN_Y;
+      }
+
+      const minMaxNorm = array => {
+        let norm;
+        for (let i = 0; i < array.length; i++) {
+          norm = (array[i] / absMax) * normScaleFactor;
+          array[i] = parseInt(norm);
+        }
+      };
+
+      minMaxNorm(heights);
+
+      return heights
+    },
+
     numPages() {
-      return Math.ceil(this.randomNumbers.length / this.barsPerPage)
-    }
+      return Math.ceil(this.randomNumbers.length / (Math.floor(this.barChartContainerWidth / (this.BAR_WIDTH + this.BAR_GAP))))
+    },
   }
 }
 
@@ -169,7 +209,6 @@ export default {
 
 .bar {
   fill: red;
-  y: 0;
 }
 
 .button-controls {
@@ -181,16 +220,5 @@ export default {
 
 }
 
-.pagination-control {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-
-  margin: 5px;
-}
-
-.page-control {
-  cursor: pointer;
-}
 
 </style>
