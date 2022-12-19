@@ -20,24 +20,23 @@
           </text>
         </g>
         <g class="axis">
-
-          <!--          <rect :x="this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X" y="0"-->
-          <!--                :width="this.BARS_CONTAINER_MARGIN_X" :height="this.barChartContainerHeight"-->
-          <!--                fill="white"></rect> &lt;!&ndash; margin-right &ndash;&gt;-->
-
+          <rect :x="this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X" y="0"
+                :width="this.BARS_CONTAINER_MARGIN_X" :height="this.barChartContainerHeight"
+                fill="white"></rect>
           <line :x1="0" :y1="this.yOrigin" :x2="this.barChartContainerWidth"
                 :y2="this.yOrigin" stroke-dasharray="10 " stroke-width="2" stroke="gray"></line>
-          <!--          <polygon-->
-          <!--              :points="`${this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X} ${this.yOrigin-this.BARS_CONTAINER_MARGIN_Y/2},-->
-          <!--              ${this.barChartContainerWidth} ${this.yOrigin},-->
-          <!--              ${this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X} ${this.yOrigin+this.BARS_CONTAINER_MARGIN_Y/2},`" fill="gray"/>&lt;!&ndash; arrow-top &ndash;&gt;-->
+          <polygon
+              :points="`${this.barChartContainerWidth-20} ${this.yOrigin-10},
+                        ${this.barChartContainerWidth} ${this.yOrigin},
+                        ${this.barChartContainerWidth-20} ${this.yOrigin+10}`"
+              fill="gray"/>
 
-          <rect x="0" y="0" :width="20" :height="this.barChartContainerHeight"
+          <rect x="-1" y="0" :width="20" :height="this.barChartContainerHeight"
                 fill="white"></rect>
           <line x1="15" :y1="0" x2="15"
                 :y2="this.barChartContainerHeight"
                 stroke-dasharray="10 " stroke-width="2" stroke="gray"></line>
-          <polygon points="5 20, 15 0, 25 20" fill="gray"/> <!-- arrow-right -->
+          <polygon points="5 20, 15 0, 25 20" fill="gray"/>
 
           <text x="0" :y="this.yOrigin+20">0</text>
 
@@ -71,7 +70,7 @@ export default {
   data() {
     return {
 
-      randomNumbers: [10, -50, 300, 100, -150, 50, 30, 100, 150, 50, 30, 100, 150, 50, 15, -100, 150, 50, 30, 100, 150,],
+      randomNumbers: [10, -50, 300, 100, -150, 50, 30, 100, 150, 50, 30, 100, 150, 50, 15, 80, 150, 50, 30, 100, 150,],
 
       barChartHeight: 1,
       barChartContainerWidth: 1,
