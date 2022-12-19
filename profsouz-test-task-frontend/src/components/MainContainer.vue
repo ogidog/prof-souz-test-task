@@ -36,13 +36,13 @@ export default {
     this.MIN_VALUE = -200;
     this.MAX_VALUE = 550;
 
-    this.getRandomNumber = (min, max) => Math.floor(Math.random() * max) + min;
+    // this.getRandomNumber = (min, max) => Math.floor(Math.random() * max) + min;
   },
 
   data() {
     return {
 
-      randomNumbers: [10, 50, -30, 100, 150, -20, 10, 50, -30, 100, 150, -20, 99, 88, -10, 200, 53, -70, 300, 300, 300, 300, 300],
+      randomNumbers: [10, 50, -30, 100, 150,],
 
       barChartHeight: 1,
       barChartContainerWidth: 1,
@@ -65,14 +65,36 @@ export default {
 
   methods: {
 
+    async getRandomNumber() {
+      return await fetch(
+          process.env.VUE_APP_SERVER_PROTOCOL + "://"
+          + process.env.VUE_APP_SERVER_HOST
+          + (process.env.VUE_APP_SERVER_PORT ? ":" + process.env.VUE_APP_SERVER_PORT : "")
+          + process.env.VUE_APP_RANDOM_NUMBER_API_URI
+          + "?minvalue=" + this.MIN_VALUE + "&maxvalue=" + this.MAX_VALUE)
+          .then(response => {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  return NaN;
+                }
+              }
+          )
+    },
+
     onResize() {
       this.barChartHeight = this.$refs?.barChart?.clientHeight;
       this.barChartContainerWidth = this.$refs?.barChartContainer?.clientWidth;
       this.barChartContainerHeight = this.$refs?.barChartContainer?.clientHeight;
     },
 
-    onBarAdd() {
-      this.randomNumbers.push(this.getRandomNumber(this.MIN_VALUE, this.MAX_VALUE));
+    async onBarAdd() {
+      let randomNumber = (await this.getRandomNumber())["randomNumber"];
+      if (randomNumber) {
+        this.randomNumbers.push(randomNumber);
+      }else{
+        alert("Error with adding bar")
+      }
     },
 
     onBarRemove() {

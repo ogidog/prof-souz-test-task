@@ -1,9 +1,9 @@
 function randomNumber(minValue, maxValue) {
 
-    const responseObject = {httpStatusCode: 500, randomNumber: NaN}
+    const responseObject = {httpStatusCode: 400, randomNumber: NaN}
 
     if (!minValue || !maxValue || minValue < -1000 || maxValue > 1000) {
-        return {...responseObject, httpStatusCode: 500, randomNumber: NaN}
+        return responseObject;
     }
 
     let randomNumber = Math.floor(Math.random() * maxValue) + minValue;
