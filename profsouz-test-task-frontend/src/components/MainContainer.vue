@@ -11,6 +11,36 @@
                 :x="index * (this.BAR_WIDTH + this.BAR_GAP)"
                 :y="value < 0 ? value : 0"
           ></rect>
+          <text transform="scale(1,-1)" v-for="(value, index) in this.barHeights" :key="index"
+                :x="index * (this.BAR_WIDTH + this.BAR_GAP)+this.BAR_WIDTH/2" dominant-baseline="middle"
+                text-anchor="middle"
+                :y="value > 0? -value - 5: -value + 15"
+          >
+            {{ this.randomNumbers[index] }}
+          </text>
+        </g>
+        <g class="axis">
+
+          <!--          <rect :x="this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X" y="0"-->
+          <!--                :width="this.BARS_CONTAINER_MARGIN_X" :height="this.barChartContainerHeight"-->
+          <!--                fill="white"></rect> &lt;!&ndash; margin-right &ndash;&gt;-->
+
+          <line :x1="0" :y1="this.yOrigin" :x2="this.barChartContainerWidth"
+                :y2="this.yOrigin" stroke-dasharray="10 " stroke-width="2" stroke="gray"></line>
+          <!--          <polygon-->
+          <!--              :points="`${this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X} ${this.yOrigin-this.BARS_CONTAINER_MARGIN_Y/2},-->
+          <!--              ${this.barChartContainerWidth} ${this.yOrigin},-->
+          <!--              ${this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X} ${this.yOrigin+this.BARS_CONTAINER_MARGIN_Y/2},`" fill="gray"/>&lt;!&ndash; arrow-top &ndash;&gt;-->
+
+          <rect x="0" y="0" :width="20" :height="this.barChartContainerHeight"
+                fill="white"></rect>
+          <line x1="15" :y1="0" x2="15"
+                :y2="this.barChartContainerHeight"
+                stroke-dasharray="10 " stroke-width="2" stroke="gray"></line>
+          <polygon points="5 20, 15 0, 25 20" fill="gray"/> <!-- arrow-right -->
+
+          <text x="0" :y="this.yOrigin+20">0</text>
+
         </g>
       </svg>
     </div>
@@ -30,8 +60,8 @@ export default {
 
     this.BAR_WIDTH = 50;
     this.BAR_GAP = 2;
-    this.BARS_CONTAINER_MARGIN_X = 10;
-    this.BARS_CONTAINER_MARGIN_Y = 10;
+    this.BARS_CONTAINER_MARGIN_X = 20;
+    this.BARS_CONTAINER_MARGIN_Y = 20;
 
     this.MIN_VALUE = -200;
     this.MAX_VALUE = 550;
@@ -41,7 +71,7 @@ export default {
   data() {
     return {
 
-      randomNumbers: [10, 50, -30, 100, 150,],
+      randomNumbers: [10, -50, 300, 100, -150, 50, 30, 100, 150, 50, 30, 100, 150, 50, 15, -100, 150, 50, 30, 100, 150,],
 
       barChartHeight: 1,
       barChartContainerWidth: 1,
@@ -110,24 +140,22 @@ export default {
       let startTranslateX = transformTranslate.matrix.e;
 
       let onMouseMove = function (e1) {
-        if (e1.offsetX > 0 && e1.offsetX <= this.barChartContainerWidth - this.BARS_CONTAINER_MARGIN_X && e1.offsetY > 0 && e1.offsetY < this.barChartHeight) {
+        if (e1.offsetX > 0 && e1.offsetX <= this.barChartContainerWidth - this.BARS_CONTAINER_MARGIN_X
+            && e1.offsetY > 0 && e1.offsetY < this.barChartHeight
+            && startTranslateX + e1.offsetX - e.offsetX <= this.BARS_CONTAINER_MARGIN_X) {
 
-          if (startTranslateX + e1.offsetX - e.offsetX <= this.BARS_CONTAINER_MARGIN_X) {
-            transformTranslate.setTranslate(startTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
-            for (let i = this.numPages + 1; i > 0; i--) {
-              if (transformTranslate.matrix.e > -i * this.barChartContainerWidth && transformTranslate.matrix.e <= -(i - 1) * this.barChartContainerWidth) {
-                this.currentPage = i - 1;
-              }
-              if (transformTranslate.matrix.e >= 0) {
-                this.currentPage = 0;
-              }
+          transformTranslate.setTranslate(startTranslateX + e1.offsetX - e.offsetX, transformTranslate.matrix.f);
+          for (let i = this.numPages + 1; i > 0; i--) {
+            if (transformTranslate.matrix.e > -i * this.barChartContainerWidth && transformTranslate.matrix.e <= -(i - 1) * this.barChartContainerWidth) {
+              this.currentPage = i - 1;
+            }
+            if (transformTranslate.matrix.e >= 0) {
+              this.currentPage = 0;
             }
           }
-
         } else {
           barChart.removeEventListener('mousemove', _onMouseMove, {capture: true});
         }
-
       }
       let _onMouseMove = onMouseMove.bind(this);
 
@@ -199,6 +227,17 @@ export default {
 
 <style scoped>
 
+svg text {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+svg text::selection {
+  background: none;
+}
+
 .container {
   position: absolute;
   top: 50%;
@@ -206,26 +245,29 @@ export default {
 
   transform: translate(-50%, -50%);
 
-  width: 50vw;
-  height: 30vh;
+  width: 60vw;
+  height: 40vh;
 }
 
 .bar-chart-container {
   height: 100%;
   overflow: hidden;
-
-  border: 1px solid red;
 }
 
 .bar-chart {
   position: relative;
   height: 100%;
 
-  border: 0px solid green;
 }
 
 .bar {
   fill: red;
+}
+
+.axis text {
+  height: 20px;
+  vertical-align: center;
+  font: bold 1.2em sans-serif;
 }
 
 .button-controls {
@@ -236,6 +278,5 @@ export default {
   margin: 5px;
 
 }
-
 
 </style>
