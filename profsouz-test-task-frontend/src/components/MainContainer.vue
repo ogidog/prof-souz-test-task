@@ -36,7 +36,6 @@ export default {
     this.MIN_VALUE = -200;
     this.MAX_VALUE = 550;
 
-    // this.getRandomNumber = (min, max) => Math.floor(Math.random() * max) + min;
   },
 
   data() {
@@ -65,36 +64,26 @@ export default {
 
   methods: {
 
-    async getRandomNumber() {
-      return await fetch(
-          process.env.VUE_APP_SERVER_PROTOCOL + "://"
+    // getRandomNumber(minValue, maxValue){
+    //   return Math.floor(Math.random() * max) + min;
+    // },
+
+    getRandomNumber(minValue, maxValue) {
+      const url = ""
+          + process.env.VUE_APP_SERVER_PROTOCOL + "://"
           + process.env.VUE_APP_SERVER_HOST
           + (process.env.VUE_APP_SERVER_PORT ? ":" + process.env.VUE_APP_SERVER_PORT : "")
           + process.env.VUE_APP_RANDOM_NUMBER_API_URI
-          + "?minvalue=" + this.MIN_VALUE + "&maxvalue=" + this.MAX_VALUE)
-          .then(response => {
-                if (response.ok) {
-                  return response.json();
-                } else {
-                  return NaN;
-                }
-              }
-          )
-    },
+          + "?minvalue=" + minValue + "&maxvalue=" + maxValue
 
-    onResize() {
-      this.barChartHeight = this.$refs?.barChart?.clientHeight;
-      this.barChartContainerWidth = this.$refs?.barChartContainer?.clientWidth;
-      this.barChartContainerHeight = this.$refs?.barChartContainer?.clientHeight;
+      return fetch(url).then(response => {
+        return response.json()
+      }).then(response => response["randomNumber"]).catch(error => NaN);
     },
 
     async onBarAdd() {
-      let randomNumber = (await this.getRandomNumber())["randomNumber"];
-      if (randomNumber) {
-        this.randomNumbers.push(randomNumber);
-      }else{
-        alert("Error with adding bar")
-      }
+      let randomNumber = (await this.getRandomNumber(this.MIN_VALUE, this.MAX_VALUE));
+      randomNumber && this.randomNumbers.push(randomNumber) || alert("Error with adding bar");
     },
 
     onBarRemove() {
@@ -147,6 +136,12 @@ export default {
       }
 
       barChart.addEventListener("mousemove", _onMouseMove, {capture: true});
+    },
+
+    onResize() {
+      this.barChartHeight = this.$refs?.barChart?.clientHeight;
+      this.barChartContainerWidth = this.$refs?.barChartContainer?.clientWidth;
+      this.barChartContainerHeight = this.$refs?.barChartContainer?.clientHeight;
     },
   },
 
