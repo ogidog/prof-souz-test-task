@@ -4,7 +4,7 @@ const path = require("path");
 module.exports = defineConfig({
   transpileDependencies: true,
 
-  outputDir: path.resolve(__dirname, "../docker/profsouz-test-task-frontend/build"),
+  outputDir: path.resolve(__dirname, "../dockers/profsouz-test-task-frontend/build"),
 
   configureWebpack: {
     devServer: {

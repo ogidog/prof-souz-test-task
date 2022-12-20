@@ -117,7 +117,7 @@ export default {
 
     async onBarAdd() {
       let randomNumber = (await this.getRandomNumber(this.MIN_VALUE, this.MAX_VALUE));
-      randomNumber && this.randomNumbers.push(randomNumber) || alert("Error with adding bar");
+      randomNumber && this.randomNumbers.push(randomNumber) || console.log("Error with adding bar");
     },
 
     onBarRemove() {

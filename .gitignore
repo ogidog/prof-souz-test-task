@@ -5,3 +5,4 @@
 /profsouz-test-task-middleware/node_modules/
 /profsouz-test-task-frontend/.env
 /dockers/profsouz-test-task-frontend/build/
+/dockers/profsouz-test-task-frontend/var/

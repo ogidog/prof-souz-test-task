@@ -15,7 +15,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ".\\profsouz-test-task-frontend\\etc\\nginx\\nginx.conf:/etc/nginx/nginx.conf"
       - ".\\profsouz-test-task-frontend\\var\\log\\nginx:/var/log/nginx"
 
   profsouz-test-task-middleware:
