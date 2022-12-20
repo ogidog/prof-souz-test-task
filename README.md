@@ -17,8 +17,14 @@
 ## Docker
 ```
 Сделал два докера: клиент (nginx-proxy) и back-сервер (node.js)
-Собирается и поднимается все командой docker compose up (Нужен установленный докер, например Windows Docker Desktop)
 Работают два контейнера: profsouz-test-task-frontend и profsouz-test-task-middleware
+```
+
+## Установка
+```
+1. Скачиваем или клонируем репозитарий
+2. В локальной папке репозитария заходим в папку dockers
+3. Запускаем docker compose up (Нужен установленный докер, например Windows Docker Desktop).
 
 Если контейнеры запустились: сервис доступен по адресу http://localhost:8080
 ```

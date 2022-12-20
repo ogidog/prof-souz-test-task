@@ -38,7 +38,7 @@
                 stroke-dasharray="10 " stroke-width="2" stroke="gray"></line>
           <polygon points="5 20, 15 0, 25 20" fill="gray"/>
 
-          <text x="0" :y="this.yOrigin+20">0</text>
+          <text x="0" :y="this.yOrigin">0</text>
 
         </g>
       </svg>
