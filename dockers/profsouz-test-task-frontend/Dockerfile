@@ -9,5 +9,5 @@ COPY ./dockers/profsouz-test-task-frontend/build /srv/www/profsouz-test-task-fro
 
 COPY ./dockers/profsouz-test-task-frontend/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80/tcp
-EXPOSE 80/udp
+EXPOSE 8080/tcp
+EXPOSE 8080/udp

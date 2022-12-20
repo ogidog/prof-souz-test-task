@@ -13,7 +13,7 @@ services:
       context: ../
       dockerfile: ./dockers/profsouz-test-task-frontend/Dockerfile
     ports:
-      - "80:80"
+      - "8080:8080"
     volumes:
       - ".\\profsouz-test-task-frontend\\var\\log\\nginx:/var/log/nginx"
 
