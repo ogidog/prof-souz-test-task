@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+
+  profsouz-test-task-frontend:
+    image: ogidog/profsouz-test-task-frontend
+    container_name: profsouz-test-task-frontend
+    networks:
+      profsouz-test-task-network:
+        aliases:
+          - test-task.pfsz.local
+    build:
+      context: ../
+      dockerfile: ./dockers/profsouz-test-task-frontend/Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ".\\profsouz-test-task-frontend\\etc\\nginx\\nginx.conf:/etc/nginx/nginx.conf"
+      - ".\\profsouz-test-task-frontend\\var\\log\\nginx:/var/log/nginx"
+
+  profsouz-test-task-middleware:
+    image: ogidog/profsouz-test-task-middleware
+    container_name: profsouz-test-task-middleware
+    networks:
+      profsouz-test-task-network:
+        aliases:
+          - api-service.pfsz.local
+    build:
+      context: ../
+      dockerfile: ./dockers/profsouz-test-task-middleware/Dockerfile
+
+networks:
+  profsouz-test-task-network:
+    ipam:
+      driver: default
+      config:
+        - subnet: "192.168.2.0/24"
+

@@ -53,6 +53,8 @@
 </template>
 
 <script>
+import {API_SERVER_URI} from "@/commons/env";
+
 export default {
 
   created() {
@@ -104,9 +106,7 @@ export default {
 
     getRandomNumber(minValue, maxValue) {
       const url = ""
-          + process.env.VUE_APP_SERVER_PROTOCOL + "://"
-          + process.env.VUE_APP_SERVER_HOST
-          + (process.env.VUE_APP_SERVER_PORT ? ":" + process.env.VUE_APP_SERVER_PORT : "")
+          + API_SERVER_URI
           + process.env.VUE_APP_RANDOM_NUMBER_API_URI
           + "?minvalue=" + minValue + "&maxvalue=" + maxValue
 
