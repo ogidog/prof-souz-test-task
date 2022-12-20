@@ -4,7 +4,7 @@
       <svg class="bar-chart" ref="barChart" v-if="this.randomNumbers.length" :width="this.barChartWidth"
            @mousedown="onDragAnDropBarChart($event)">
         <g class="bars-container" ref="barsContainer"
-           :transform="`translate(${this.BARS_CONTAINER_MARGIN_X}, ${this.yOrigin}) scale(1,-1)`">
+           :transform="`translate(${this.getCurrentTranslateX()}, ${this.yOrigin}) scale(1,-1)`">
           <rect class="bar" v-for="(value, index) in this.barHeights" :key="index"
                 :height="Math.abs(value)"
                 :width="this.BAR_WIDTH"
@@ -19,7 +19,7 @@
             {{ this.randomNumbers[index] }}
           </text>
         </g>
-        <g class="axis">
+        <g class="axes">
           <rect :x="this.barChartContainerWidth-this.BARS_CONTAINER_MARGIN_X" y="0"
                 :width="this.BARS_CONTAINER_MARGIN_X" :height="this.barChartContainerHeight"
                 fill="white"></rect>
@@ -44,10 +44,10 @@
       </svg>
     </div>
     <div class="button-controls">
-      <button v-if="currentPage !== 0" @click="onPrevPaging">{{ "<" }}</button>
+      <button @click="onPrevPaging">{{ "<" }}</button>
       <button @click="onBarAdd">Add Bar</button>
       <button @click="onBarRemove">Remove Bar</button>
-      <button v-if="currentPage !== this.numPages-1" @click="onNextPaging">{{ ">" }}</button>
+      <button @click="onNextPaging">{{ ">" }}</button>
     </div>
   </div>
 </template>
@@ -93,9 +93,14 @@ export default {
 
   methods: {
 
-    // getRandomNumber(minValue, maxValue){
-    //   return Math.floor(Math.random() * max) + min;
-    // },
+    getCurrentTranslateX() {
+      if (!this.$refs.barsContainer) {
+        return this.BARS_CONTAINER_MARGIN_X;
+      }
+
+      let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+      return transformTranslate.matrix.e;
+    },
 
     getRandomNumber(minValue, maxValue) {
       const url = ""
@@ -120,15 +125,19 @@ export default {
     },
 
     onNextPaging() {
-      this.currentPage += 1
-      let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
-      transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth, transformTranslate.matrix.f);
+      if (this.currentPage !== this.numPages - 1) {
+        this.currentPage += 1
+        let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+        transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth, transformTranslate.matrix.f);
+      }
     },
 
     onPrevPaging() {
-      let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
-      transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth + this.barChartContainerWidth + this.BARS_CONTAINER_MARGIN_X, transformTranslate.matrix.f);
-      this.currentPage -= 1
+      if (this.currentPage !== 0) {
+        let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+        transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth + this.barChartContainerWidth + this.BARS_CONTAINER_MARGIN_X, transformTranslate.matrix.f);
+        this.currentPage -= 1
+      }
     },
 
     onDragAnDropBarChart(e) {
@@ -173,6 +182,7 @@ export default {
   },
 
   computed: {
+
     barChartWidth() {
       const width = this.randomNumbers.length * this.BAR_WIDTH + this.BAR_GAP * this.randomNumbers.length - this.BARS_CONTAINER_MARGIN_X;
       return width < this.barChartContainerWidth ? this.barChartContainerWidth : width;
@@ -263,7 +273,7 @@ svg text::selection {
   fill: red;
 }
 
-.axis text {
+.axes text {
   height: 20px;
   vertical-align: center;
   font: bold 1.2em sans-serif;
