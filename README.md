@@ -20,5 +20,5 @@
 Собирается и поднимается все командой docker compose up (Нужен установленный докер, например Windows Docker Desktop)
 Работают два контейнера: profsouz-test-task-frontend и profsouz-test-task-middleware
 
-Если контейнеры запустились: сервис доступен по адресу (http://localhost:8080)
+Если контейнеры запустились: сервис доступен по адресу http://localhost:8080
 ```
