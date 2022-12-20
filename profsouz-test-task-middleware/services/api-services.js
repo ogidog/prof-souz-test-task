@@ -10,4 +10,5 @@ function randomNumber(minValue, maxValue) {
     return {...responseObject, httpStatusCode: 200, randomNumber: randomNumber};
 }
 
+
 module.exports = {randomNumber};
