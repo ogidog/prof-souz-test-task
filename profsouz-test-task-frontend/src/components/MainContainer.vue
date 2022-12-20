@@ -43,18 +43,20 @@
         </g>
       </svg>
     </div>
-    <PagingControllers/>
+    <div class="button-controls">
+      <button @click="onPrevPaging">{{ "<" }}</button>
+      <button @click="onBarAdd">Add Bar</button>
+      <button @click="onBarRemove">Remove Bar</button>
+      <button @click="onNextPaging">{{ ">" }}</button>
+    </div>
   </div>
 </template>
 
 <script>
-
-import PagingControllers from "@/components/PagingControllers";
-
 import {API_SERVER_URI} from "@/commons/env";
 
 export default {
-  components: {PagingControllers},
+
   created() {
 
     this.BAR_WIDTH = 50;
@@ -100,6 +102,42 @@ export default {
 
       let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
       return transformTranslate.matrix.e;
+    },
+
+    getRandomNumber(minValue, maxValue) {
+      const url = ""
+          + API_SERVER_URI
+          + process.env.VUE_APP_RANDOM_NUMBER_API_URI
+          + "?minvalue=" + minValue + "&maxvalue=" + maxValue
+
+      return fetch(url).then(response => {
+        return response.json()
+      }).then(response => response["randomNumber"]).catch(error => NaN);
+    },
+
+    async onBarAdd() {
+      let randomNumber = (await this.getRandomNumber(this.MIN_VALUE, this.MAX_VALUE));
+      randomNumber && this.randomNumbers.push(randomNumber) || console.log("Error with adding bar");
+    },
+
+    onBarRemove() {
+      this.randomNumbers.pop();
+    },
+
+    onNextPaging() {
+      if (this.currentPage !== this.numPages - 1) {
+        this.currentPage += 1
+        let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+        transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth, transformTranslate.matrix.f);
+      }
+    },
+
+    onPrevPaging() {
+      if (this.currentPage !== 0) {
+        let transformTranslate = Array.from(this.$refs.barsContainer.transform.baseVal).filter(SVGTransform => SVGTransform.type === 2)[0];
+        transformTranslate.setTranslate(-this.currentPage * this.barChartContainerWidth + this.barChartContainerWidth + this.BARS_CONTAINER_MARGIN_X, transformTranslate.matrix.f);
+        this.currentPage -= 1
+      }
     },
 
     onDragAnDropBarChart(e) {
