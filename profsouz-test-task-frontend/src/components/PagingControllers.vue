@@ -31,16 +31,12 @@ export default {
 
     getRandomNumber(minValue, maxValue) {
       const url = ""
-          + this.appConfig.API_SERVER_URI
-          + process.env.VUE_APP_RANDOM_NUMBER_API_URI
+          + this.appConfig.RANDOM_NUMBER_API_URL()
           + "?minvalue=" + minValue + "&maxvalue=" + maxValue
 
       return fetch(url).then(response => {
         return response.json()
-      }).then(response => response["randomNumber"]).catch(error => {
-        console.log(error)
-        return NaN
-      });
+      }).then(response => response["randomNumber"]).catch(error => NaN);
     },
 
     async onBarAdd() {
@@ -52,14 +48,10 @@ export default {
     },
 
     onPrevPaging() {
-      if (store.currentPage !== 0) {
-        store.setCurrentPage(store.currentPage - 1);
-      }
+      store.currentPage !== 0 && store.setCurrentPage(store.currentPage - 1);
     },
     onNextPaging() {
-      if (store.currentPage !== store.numPages - 1) {
-        store.setCurrentPage(store.currentPage + 1);
-      }
+      (store.currentPage !== store.numPages - 1) && store.setCurrentPage(store.currentPage + 1);
     },
   }
 

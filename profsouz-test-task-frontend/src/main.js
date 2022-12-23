@@ -1,7 +1,7 @@
 import {createApp} from 'vue'
 import App from './App.vue';
 
-import {appConfig} from "@/commons/env";
+import {appConfig} from "@/commons/config";
 
 
 const app = createApp(App)
